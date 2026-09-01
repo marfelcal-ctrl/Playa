@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#020304" />
+  <title>Personal Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <div class="noise"></div>
+
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-shell">
+      <div class="auth-brand">
+        <div class="brand-mark large">P</div>
+        <span class="eyebrow">PERSONAL TRACKER</span>
+        <h1>One account. Your money and work time everywhere.</h1>
+        <p>Sign in to sync Bills, Budget, and Time Stamp records securely with Supabase.</p>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-switch">
+          <button class="auth-mode active" data-auth-mode="login">Log in</button>
+          <button class="auth-mode" data-auth-mode="register">Register</button>
+        </div>
+
+        <form id="authForm">
+          <label id="nameField" class="hidden">Display name
+            <input id="authName" autocomplete="name" placeholder="Your name" />
+          </label>
+          <label>Email
+            <input id="authEmail" type="email" autocomplete="email" required placeholder="you@example.com" />
+          </label>
+          <label>Password
+            <input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="At least 6 characters" />
+          </label>
+          <button id="authSubmit" class="primary auth-submit" type="submit">Log in</button>
+          <button id="forgotPassword" class="text-button auth-link" type="button">Forgot password?</button>
+          <p id="authMessage" class="auth-message"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="resetScreen" class="auth-screen hidden">
+    <div class="auth-card reset-card">
+      <span class="eyebrow">PASSWORD RECOVERY</span>
+      <h2>Choose a new password</h2>
+      <form id="resetForm">
+        <label>New password
+          <input id="newPassword" type="password" minlength="6" required placeholder="At least 6 characters" />
+        </label>
+        <button class="primary auth-submit" type="submit">Update password</button>
+        <p id="resetMessage" class="auth-message"></p>
+      </form>
+    </div>
+  </section>
+
+  <div id="app" class="app-shell hidden">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">P</div>
+        <div>
+          <h1>Personal Tracker</h1>
+          <p>Your money, bills, and work time in one place.</p>
+        </div>
+      </div>
+      <div class="account-area">
+        <div class="today-pill" id="todayLabel"></div>
+        <div class="user-chip">
+          <span class="status-dot"></span>
+          <div><strong id="userName">User</strong><small id="userRole">USER</small></div>
+        </div>
+        <button class="secondary compact" id="logoutBtn">Log out</button>
+      </div>
+    </header>
+
+    <div id="migrationBanner" class="migration-banner hidden">
+      <div>
+        <strong>Old browser data detected</strong>
+        <span>You have data from the previous localStorage version. You can copy it into this account once.</span>
+      </div>
+      <button id="migrateLegacyBtn" class="primary">Import old data</button>
+      <button id="dismissMigrationBtn" class="icon-btn" aria-label="Dismiss">×</button>
+    </div>
+
+    <nav class="tabs" aria-label="Personal Tracker sections">
+      <button class="tab active" data-tab="bills">Bills</button>
+      <button class="tab" data-tab="budget">Budget</button>
+      <button class="tab" data-tab="timestamp">Time Stamp</button>
+      <button id="adminTab" class="tab hidden" data-tab="admin">Admin</button>
+    </nav>
+
+    <main>
+      <section id="bills" class="panel active">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">BILLS TAB</span>
+            <h2>Monthly Bills</h2>
+            <p>Add your bills, track payments, and see which one you should handle first.</p>
+          </div>
+          <button class="primary" id="addBillBtn">+ Add Bill</button>
+        </div>
+
+        <div class="summary-grid">
+          <article class="summary-card"><span>Available Budget</span><strong id="billBudget">₱0.00</strong><small>From Budget tab</small></article>
+          <article class="summary-card"><span>Total Bills</span><strong id="totalBills">₱0.00</strong><small>All recorded bills</small></article>
+          <article class="summary-card"><span>Remaining After Bills</span><strong id="remainingAfterBills">₱0.00</strong><small>Budget minus unpaid bills</small></article>
+          <article class="summary-card"><span>Unpaid</span><strong id="unpaidCount">0</strong><small>Outstanding items</small></article>
+        </div>
+
+        <div class="smart-card">
+          <div>
+            <span class="eyebrow">SMART PAYMENT PRIORITY</span>
+            <h3>Suggested payment order</h3>
+            <p>Ranks bills using overdue status, due date, essential status, and amount.</p>
+          </div>
+          <button class="secondary" id="refreshPriority">Generate Priority</button>
+          <div id="priorityList" class="priority-list"></div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-title"><h3>Your bills</h3><span id="billMonthLabel"></span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Bill</th><th>Amount</th><th>Due</th><th>Type</th><th>Status</th><th></th></tr></thead>
+              <tbody id="billTableBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="billEmpty">No bills yet. Add your first bill.</div>
+        </div>
+      </section>
+
+      <section id="budget" class="panel">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">BUDGET TAB</span>
+            <h2>Income & Deductions</h2>
+            <p>Your available total automatically flows into the Bills tab.</p>
+          </div>
+          <span id="budgetSaveState" class="save-state">Synced</span>
+        </div>
+
+        <div class="budget-layout">
+          <div class="form-card">
+            <h3>Earnings</h3>
+            <label>Base Income <input id="baseIncome" type="number" min="0" step="0.01" placeholder="0.00"></label>
+            <label>Overtime Pay <input id="overtimePay" type="number" min="0" step="0.01" placeholder="0.00"></label>
+            <label>Holiday Premium Pay <input id="holidayPay" type="number" min="0" step="0.01" placeholder="0.00"></label>
+            <label>Credits / Other Income <input id="credits" type="number" step="0.01" placeholder="0.00"></label>
+            <label>Savings Allocation <input id="savings" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          </div>
+
+          <div class="form-card">
+            <h3>Deductions</h3>
+            <label>Government Deductions <input id="government" type="number" min="0" step="0.01" placeholder="0.00"></label>
+            <label>Late Deductions <input id="lateDeduction" type="number" min="0" step="0.01" placeholder="0.00"></label>
+            <label>Absent Deductions <input id="absentDeduction" type="number" min="0" step="0.01" placeholder="0.00"></label>
+            <label>Overbreak Deductions <input id="overbreakDeduction" type="number" min="0" step="0.01" placeholder="0.00"></label>
+            <label>Miscellaneous <input id="miscDeduction" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          </div>
+        </div>
+
+        <div class="budget-summary">
+          <div><span>Total Earnings</span><strong id="totalEarnings">₱0.00</strong></div>
+          <div><span>Total Deductions</span><strong id="totalDeductions">₱0.00</strong></div>
+          <div><span>Savings Set Aside</span><strong id="savingsTotal">₱0.00</strong></div>
+          <div class="net"><span>Available for Bills</span><strong id="netBudget">₱0.00</strong></div>
+        </div>
+      </section>
+
+      <section id="timestamp" class="panel">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">TIME STAMP TAB</span>
+            <h2>Work Time Tracker</h2>
+            <p>Time In and Time Out once per date; Break / Away can be used multiple times.</p>
+          </div>
+        </div>
+
+        <div class="clock-card">
+          <div class="live-clock" id="liveClock">00:00:00</div>
+          <div class="live-date" id="liveDate"></div>
+          <div class="work-timer"><span>Running work time</span><strong id="workTimer">00:00:00</strong></div>
+          <div class="break-meter">
+            <div class="break-line"><span>Break / Away used</span><strong id="breakTimer">00:00:00 / 01:30:00</strong></div>
+            <div class="progress"><div id="breakProgress"></div></div>
+          </div>
+          <div class="stamp-actions">
+            <button class="stamp timein" id="timeInBtn">Time In</button>
+            <button class="stamp break" id="breakBtn">Start Break / Away</button>
+            <button class="stamp timeout" id="timeOutBtn">Time Out</button>
+          </div>
+          <p class="status-text" id="stampStatus">Ready for today's time stamp.</p>
+        </div>
+
+        <div class="table-card">
+          <div class="table-title time-history-title">
+            <h3>Time history</h3>
+            <div class="time-data-actions">
+              <button class="mini" id="exportTimeCsv" type="button">Export CSV</button>
+              <button class="mini" id="exportTimeJson" type="button">Export Backup</button>
+              <button class="mini" id="importTimeFile" type="button">Import File</button>
+              <input id="timeImportInput" type="file" accept=".csv,.json,text/csv,application/json" hidden>
+            </div>
+          </div>
+          <p class="import-help">CSV and JSON are supported. Imports merge by date into your signed-in account.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Time In</th><th>Break / Away</th><th>Time Out</th><th>Work Duration</th><th>Details</th></tr></thead>
+              <tbody id="timeTableBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="timeEmpty">No time stamps recorded yet.</div>
+        </div>
+      </section>
+
+      <section id="admin" class="panel">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">ADMIN DASHBOARD</span>
+            <h2>Account Management</h2>
+            <p>Manage user roles and account access. This section is visible only to admins.</p>
+          </div>
+          <button id="refreshAdmin" class="secondary">Refresh</button>
+        </div>
+
+        <div class="summary-grid">
+          <article class="summary-card"><span>Registered Users</span><strong id="adminUsers">0</strong><small>Profiles in database</small></article>
+          <article class="summary-card"><span>Active Users</span><strong id="adminActive">0</strong><small>Allowed to use tracker</small></article>
+          <article class="summary-card"><span>Admins</span><strong id="adminAdmins">0</strong><small>Administrator accounts</small></article>
+          <article class="summary-card"><span>Cloud Records</span><strong id="adminRecords">0</strong><small>Bills + time records</small></article>
+        </div>
+
+        <div class="table-card">
+          <div class="table-title"><h3>Users</h3><span>Role-based access</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+              <tbody id="adminUserBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="music-card">
+        <div class="music-copy">
+          <span class="eyebrow">MUSIC PLAYER</span>
+          <h3>Weekly 100: Philippines</h3>
+          <p>Music is provided by Audiomack. Use the controls directly inside the player.</p>
+        </div>
+        <iframe id="audiomackPlayer" title="Audiomack Weekly 100 Philippines" src="https://audiomack.com/embed/geo-charts/playlist/philippines" scrolling="no" width="100%" height="300" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" loading="lazy"></iframe>
+        <a class="audiomack-link" href="https://audiomack.com/geo-charts/playlist/philippines" target="_blank" rel="noopener noreferrer">Open playlist on Audiomack ↗</a>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="billDialog">
+    <form method="dialog" id="billForm">
+      <div class="dialog-head"><h3>Add Bill</h3><button value="cancel" class="icon-btn" aria-label="Close">×</button></div>
+      <label>Bill name <input id="billName" required placeholder="e.g. Electricity"></label>
+      <label>Amount <input id="billAmount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+      <label>Due date <input id="billDue" type="date" required></label>
+      <label>Bill type
+        <select id="billType"><option value="essential">Essential</option><option value="regular">Regular</option><option value="debt">Debt / Credit</option><option value="optional">Optional</option></select>
+      </label>
+      <div class="dialog-actions"><button value="cancel" class="secondary">Cancel</button><button type="submit" value="default" class="primary">Save Bill</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="detailsDialog">
+    <form method="dialog" id="detailsForm">
+      <div class="dialog-head"><h3>Time Stamp Details</h3><button value="cancel" class="icon-btn" aria-label="Close">×</button></div>
+      <input type="hidden" id="detailsDate">
+      <label>Details / Notes
+        <textarea id="detailsText" rows="6" placeholder="Overtime, holiday, schedule notes, work details..."></textarea>
+      </label>
+      <div class="dialog-actions"><button value="cancel" class="secondary">Cancel</button><button type="submit" value="default" class="primary">Save Details</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
