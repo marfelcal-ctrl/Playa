@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#030406" />
+  <title>Personal Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div>
+        <h1>Personal Tracker</h1>
+        <p>Your money, bills, and work time in one place.</p>
+      </div>
+    </div>
+    <div class="today-pill" id="todayLabel"></div>
+  </header>
+
+  <nav class="tabs" aria-label="Personal Tracker sections">
+    <button class="tab active" data-tab="bills">Bills</button>
+    <button class="tab" data-tab="budget">Budget</button>
+    <button class="tab" data-tab="timestamp">Time Stamp</button>
+  </nav>
+
+  <main>
+    <section id="bills" class="panel active">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">BILLS TAB</span>
+          <h2>Monthly Bills</h2>
+          <p>Add your bills, track payments, and see which one you should handle first.</p>
+        </div>
+        <button class="primary" id="addBillBtn">+ Add Bill</button>
+      </div>
+
+      <div class="summary-grid">
+        <article class="summary-card"><span>Available Budget</span><strong id="billBudget">₱0.00</strong><small>From Budget tab</small></article>
+        <article class="summary-card"><span>Total Bills</span><strong id="totalBills">₱0.00</strong><small>Unpaid + paid bills</small></article>
+        <article class="summary-card"><span>Remaining After Bills</span><strong id="remainingAfterBills">₱0.00</strong><small>Budget minus unpaid bills</small></article>
+        <article class="summary-card"><span>Unpaid</span><strong id="unpaidCount">0</strong><small>Outstanding items</small></article>
+      </div>
+
+      <div class="smart-card">
+        <div>
+          <span class="eyebrow">SMART PAYMENT PRIORITY</span>
+          <h3>Suggested payment order</h3>
+          <p>Ranks bills using overdue status, due date, essential status, and amount.</p>
+        </div>
+        <button class="secondary" id="refreshPriority">Generate Priority</button>
+        <div id="priorityList" class="priority-list"></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-title"><h3>Your bills</h3><span id="billMonthLabel"></span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Bill</th><th>Amount</th><th>Due</th><th>Type</th><th>Status</th><th></th></tr></thead>
+            <tbody id="billTableBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="billEmpty">No bills yet. Add your first bill.</div>
+      </div>
+    </section>
+
+    <section id="budget" class="panel">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">BUDGET TAB</span>
+          <h2>Income & Deductions</h2>
+          <p>Build your actual available budget. The final total is automatically reflected in Bills.</p>
+        </div>
+      </div>
+
+      <div class="budget-layout">
+        <div class="form-card">
+          <h3>Earnings</h3>
+          <label>Base Income <input id="baseIncome" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Overtime Pay <input id="overtimePay" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Holiday Premium Pay <input id="holidayPay" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Credits / Other Income <input id="credits" type="number" step="0.01" placeholder="0.00"></label>
+          <label>Savings Allocation <input id="savings" type="number" min="0" step="0.01" placeholder="0.00"></label>
+        </div>
+
+        <div class="form-card">
+          <h3>Deductions</h3>
+          <label>Government Deductions <input id="government" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Late Deductions <input id="lateDeduction" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Absent Deductions <input id="absentDeduction" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Overbreak Deductions <input id="overbreakDeduction" type="number" min="0" step="0.01" placeholder="0.00"></label>
+          <label>Miscellaneous <input id="miscDeduction" type="number" min="0" step="0.01" placeholder="0.00"></label>
+        </div>
+      </div>
+
+      <div class="budget-summary">
+        <div><span>Total Earnings</span><strong id="totalEarnings">₱0.00</strong></div>
+        <div><span>Total Deductions</span><strong id="totalDeductions">₱0.00</strong></div>
+        <div><span>Savings Set Aside</span><strong id="savingsTotal">₱0.00</strong></div>
+        <div class="net"><span>Available for Bills</span><strong id="netBudget">₱0.00</strong></div>
+      </div>
+    </section>
+
+    <section id="timestamp" class="panel">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">TIME STAMP TAB</span>
+          <h2>Work Time Tracker</h2>
+          <p>Track Time In, multiple Break/Away sessions, and Time Out for each day.</p>
+        </div>
+      </div>
+
+      <div class="clock-card">
+        <div class="live-clock" id="liveClock">00:00:00</div>
+        <div class="live-date" id="liveDate"></div>
+        <div class="work-timer"><span>Running work time</span><strong id="workTimer">00:00:00</strong></div>
+        <div class="break-meter">
+          <div class="break-line"><span>Break / Away used</span><strong id="breakTimer">00:00:00 / 01:30:00</strong></div>
+          <div class="progress"><div id="breakProgress"></div></div>
+        </div>
+        <div class="stamp-actions">
+          <button class="stamp timein" id="timeInBtn">Time In</button>
+          <button class="stamp break" id="breakBtn">Start Break / Away</button>
+          <button class="stamp timeout" id="timeOutBtn">Time Out</button>
+        </div>
+        <p class="status-text" id="stampStatus">Ready for today's time stamp.</p>
+      </div>
+
+      <div class="table-card">
+        <div class="table-title"><h3>Time history</h3><button class="text-button" id="clearTimeHistory">Clear history</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Time In</th><th>Break / Away</th><th>Time Out</th><th>Work Duration</th></tr></thead>
+            <tbody id="timeTableBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="timeEmpty">No time stamps recorded yet.</div>
+      </div>
+    </section>
+
+    <section class="music-card">
+      <div class="music-copy">
+        <span class="eyebrow">MUSIC PLAYER</span>
+        <h3>Weekly 100: Philippines</h3>
+        <p>Music is provided by Audiomack. Use the Personal Tracker controls or the controls inside the embedded player.</p>
+      </div>
+
+      <div class="music-controls" aria-label="Music controls">
+        <div class="music-buttons">
+          <button class="music-control-btn" id="musicPrevBtn" type="button" title="Previous track" aria-label="Previous track">⏮</button>
+          <button class="music-control-btn music-play-btn" id="musicPlayBtn" type="button" title="Play or pause" aria-label="Play or pause">▶</button>
+          <button class="music-control-btn" id="musicNextBtn" type="button" title="Next track" aria-label="Next track">⏭</button>
+        </div>
+
+        <div class="volume-control">
+          <button class="music-control-btn volume-mute" id="musicMuteBtn" type="button" title="Mute or unmute" aria-label="Mute or unmute">🔊</button>
+          <input id="musicVolume" type="range" min="0" max="100" value="70" step="1" aria-label="Music volume">
+          <span id="musicVolumeLabel">70%</span>
+        </div>
+      </div>
+      <p class="music-control-status" id="musicControlStatus">Player controls ready. Audiomack's built-in controls remain available below.</p>
+
+      <iframe
+        id="audiomackPlayer"
+        title="Audiomack Weekly 100 Philippines"
+        src="https://audiomack.com/embed/geo-charts/playlist/philippines"
+        scrolling="no"
+        width="100%"
+        height="300"
+        frameborder="0"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        loading="lazy"></iframe>
+      <a class="audiomack-link" href="https://audiomack.com/geo-charts/playlist/philippines" target="_blank" rel="noopener noreferrer">Open playlist on Audiomack ↗</a>
+    </section>
+  </main>
+
+  <dialog id="billDialog">
+    <form method="dialog" id="billForm">
+      <div class="dialog-head"><h3>Add Bill</h3><button value="cancel" class="icon-btn" aria-label="Close">×</button></div>
+      <label>Bill name <input id="billName" required placeholder="e.g. Electricity"></label>
+      <label>Amount <input id="billAmount" type="number" min="0.01" step="0.01" required placeholder="0.00"></label>
+      <label>Due date <input id="billDue" type="date" required></label>
+      <label>Bill type
+        <select id="billType"><option value="essential">Essential</option><option value="regular">Regular</option><option value="debt">Debt / Credit</option><option value="optional">Optional</option></select>
+      </label>
+      <div class="dialog-actions"><button value="cancel" class="secondary">Cancel</button><button type="submit" value="default" class="primary">Save Bill</button></div>
+    </form>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
